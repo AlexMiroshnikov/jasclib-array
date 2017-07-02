@@ -2,3 +2,5 @@ test
 .babelrc
 .eslintrc.js
 .travis.yml
+.npm-debug.log
+src
