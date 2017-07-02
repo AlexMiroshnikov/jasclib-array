@@ -1,3 +1,4 @@
 test
 .babelrc
 .eslintrc.js
+.travis.yml
