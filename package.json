@@ -1,6 +1,7 @@
 {
   "name": "jasclib-array",
   "version": "0.0.1-beta",
+  "main": "src/Array.js",
   "scripts": {
     "test": "./node_modules/eslint/bin/eslint.js ./src && ./node_modules/mocha/bin/mocha --require babel-register --recursive ./test"
   },
