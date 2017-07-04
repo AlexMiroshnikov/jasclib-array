@@ -7,8 +7,8 @@
 const makePregFromString = str => {
     const parts = str.split('/');
 
-    if (parts.length < 3) {
-        throw new Error('Unexpected preg source');
+    if (parts[2] && /[^gimuy]/.test(parts[2])) {
+        throw new Error('Unexpected preg flags');
     }
 
     return new RegExp(parts[1], parts[2] || undefined);
@@ -24,36 +24,36 @@ export const cutByWhiteList = (arr, map) => {
     Object.keys(arr).map(key => {
         const value = arr[key];
 
-    if (typeof map[key] !== 'undefined') {
-        if (typeof map[key] === 'object' && typeof value === 'object') {
-            arr[key] = cutByWhiteList(value, map[key]);
-        } else if (typeof map[key] === 'function') {
-            arr[key] = map[key](value);
-        }
-    } else {
-        let unset = true;
-        const mapKeys = Object.keys(map);
+        if (typeof map[key] !== 'undefined') {
+            if (typeof map[key] === 'object' && typeof value === 'object') {
+                arr[key] = cutByWhiteList(value, map[key]);
+            } else if (typeof map[key] === 'function') {
+                arr[key] = map[key](value);
+            }
+        } else {
+            let unset = true;
+            const mapKeys = Object.keys(map);
 
-        for (let i = 0; i < mapKeys.length; i++) {
-            const mapKey = mapKeys[i];
+            for (let i = 0; i < mapKeys.length; i++) {
+                const mapKey = mapKeys[i];
 
-            if (/^\/.+\/[siu]*$/.test(mapKey) && makePregFromString(mapKey).test(key)) {
-                if (typeof map[mapKey] === 'object') {
-                    arr[key] = cutByWhiteList(value, map[mapKey]);
-                } else if (typeof map[mapKey] === 'function') {
-                    arr[key] = map[mapKey](value);
+                if (/^\/.+\/[gimuy]*$/.test(mapKey) && makePregFromString(mapKey).test(key)) {
+                    if (typeof map[mapKey] === 'object') {
+                        arr[key] = cutByWhiteList(value, map[mapKey]);
+                    } else if (typeof map[mapKey] === 'function') {
+                        arr[key] = map[mapKey](value);
+                    }
+
+                    unset = false;
+                    break;
                 }
+            }
 
-                unset = false;
-                break;
+            if (unset) {
+                delete arr[key];
             }
         }
-
-        if (unset) {
-            delete arr[key];
-        }
-    }
-});
+    });
 
     return arr;
 };
@@ -83,7 +83,7 @@ export const cutByBlackList = (arr, map) => {
         for (let i = 0; i < mapKeys.length; i++) {
             const mapKey = mapKeys[i];
 
-            if (/^\/.+\/[siu]*$/.test(mapKey) && makePregFromString(mapKey).test(key)) {
+            if (/^\/.+\/[gimuy]*$/.test(mapKey) && makePregFromString(mapKey).test(key)) {
                 if (typeof map[mapKey] === 'object') {
                     arr[key] = cutByBlackList(value, map[mapKey]);
                 } else if (typeof map[mapKey] === 'function') {
