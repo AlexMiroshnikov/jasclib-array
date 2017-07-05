@@ -4,3 +4,5 @@ test
 .travis.yml
 .npm-debug.log
 src
+coverage
+.nyc_output

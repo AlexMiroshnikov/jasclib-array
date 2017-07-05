@@ -25,6 +25,7 @@ describe('JasclibArray', () => {
                 {'good': true},
                 {'good': false},
             ],
+            'inc': 1,
         };
 
         const map = {
@@ -42,11 +43,12 @@ describe('JasclibArray', () => {
                     return true;
                 });
             },
+            '/inc/': val => (val + 1),
         };
 
         const output = JasclibArray.cutByWhiteList(Object.assign({}, input), map);
 
-        assert.strictEqual(Object.keys(output).length, 2);
+        assert.strictEqual(Object.keys(output).length, 3);
         assert.deepStrictEqual(
             output,
             {
@@ -59,6 +61,7 @@ describe('JasclibArray', () => {
                 'func': [
                     {'good': true},
                 ],
+                'inc': 2,
             },
         );
     });
@@ -77,6 +80,12 @@ describe('JasclibArray', () => {
             'white': {
                 'some': 'thing',
             },
+            'func': 2,
+            'nested': {
+                'keep': true,
+                'unset': false,
+                'substring': 'string',
+            },
         };
 
         const map = {
@@ -90,11 +99,16 @@ describe('JasclibArray', () => {
                 },
             },
             'white': true,
+            'func': val => (val - 1),
+            '/nested/': {
+                'unset': true,
+                '/sub/': true,
+            },
         };
 
         const output = JasclibArray.cutByBlackList(input, map);
 
-        assert.strictEqual(Object.keys(output).length, 1);
+        assert.strictEqual(Object.keys(output).length, 3);
         assert.deepStrictEqual({
             'black': {
                 '1': 'one',
@@ -103,6 +117,19 @@ describe('JasclibArray', () => {
                     '2': 3,
                 },
             },
+            'func': 1,
+            'nested': {
+                'keep': true,
+            },
         }, output);
+    });
+
+    it('handles invalid preg', () => {
+        const input = {a: 1};
+        const map = {'/inva/lid/': true};
+        assert.throws(
+            () => JasclibArray.cutByWhiteList(input, map),
+            /Unexpected preg flags/
+        );
     });
 });
