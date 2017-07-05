@@ -1,6 +1,7 @@
 # jasclib-array
 [![npm version](https://badge.fury.io/js/jasclib-array.svg)](https://badge.fury.io/js/jasclib-array)
 [![Build Status](https://travis-ci.org/AlexMiroshnikov/jasclib-array.svg?branch=master)](https://travis-ci.org/AlexMiroshnikov/jasclib-array)
+[![Coverage Status](https://coveralls.io/repos/github/AlexMiroshnikov/jasclib-array/badge.svg?branch=develop)](https://coveralls.io/github/AlexMiroshnikov/jasclib-array?branch=develop)
 
 Configurable array/object helpers for JavaScript
 
