@@ -7,6 +7,8 @@ node_js:
   - "5"
   - "4"
 
+script: "npm run test-with-coverage"
+
 cache:
   directories:
     - "node_modules"
