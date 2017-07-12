@@ -132,4 +132,124 @@ describe('JasclibArray', () => {
             /Unexpected preg flags/
         );
     });
+
+    it('supports rercursion', () => {
+        const input = [
+            {
+                id: 1,
+                attr: 'correct',
+                children: [
+                    {
+                        id: 101,
+                        attr: 'incorrect',
+                        children: [
+                            {
+                                id: 1001,
+                                attr: 'correct',
+                                children: [
+                                    {
+                                        id: 10001,
+                                    },
+                                    {
+                                        id: 10002,
+                                        attr: 'correct',
+                                    }
+                                ],
+                            }
+                        ],
+                    },
+                    {
+                        id: 102,
+                        attr: 'correct',
+                        children: [
+                            {
+                                id: 2001,
+                                attr: 'correct',
+                                children: [
+                                    {
+                                        id: 20001,
+                                    },
+                                    {
+                                        id: 20002,
+                                        attr: 'correct',
+                                    }
+                                ],
+                            },
+                            //*
+                            {
+                                id: 2002,
+                                attr: 'incorrect',
+                                children: [
+                                    {
+                                        id: 22001,
+                                    },
+                                    {
+                                        id: 22002,
+                                        attr: 'correct',
+                                    }
+                                ],
+                            }
+                            //*/
+                        ],
+                    },
+                ],
+            },
+            //*
+            {
+                id: 2,
+                attr: 'incorrect',
+                children: [],
+            },
+            //*/
+        ];
+
+        const map = {
+            '/^\\d+$/': {
+                id: (arg, container) => {
+                    if (!container.attr || container.attr !== 'correct') {
+                        return ['$_unset'];
+                    }
+
+                    return arg;
+                },
+                attr: arg => {
+                    if (arg !== 'correct') {
+                        return ['$_unset'];
+                    }
+
+                    return arg;
+                },
+                children: arg => {
+                    return ['$_ref', arg];
+                },
+            },
+        };
+
+        const output = JasclibArray.cutByWhiteList(input, map);
+
+        assert.deepStrictEqual(output, [
+            {
+                id: 1,
+                attr: 'correct',
+                children: [
+                    {
+                        id: 102,
+                        attr: 'correct',
+                        children: [
+                            {
+                                id: 2001,
+                                attr: 'correct',
+                                children: [
+                                    {
+                                        id: 20002,
+                                        attr: 'correct',
+                                    }
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ]);
+    });
 });

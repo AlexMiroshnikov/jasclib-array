@@ -18,17 +18,36 @@ const makePregFromString = str => {
  *
  * @param {Object} arr
  * @param {Object} map
+ * @param {Array} mapStack
  * @returns {Object}
  */
-export const cutByWhiteList = (arr, map) => {
-    Object.keys(arr).map(key => {
+export const cutByWhiteList = (arr, map, mapStack = []) => {
+    mapStack.push(map);
+
+    const keys = Object.keys(arr);
+
+    for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
         const value = arr[key];
 
         if (typeof map[key] !== 'undefined') {
             if (typeof map[key] === 'object' && typeof value === 'object') {
-                arr[key] = cutByWhiteList(value, map[key]);
+                arr[key] = cutByWhiteList(value, map[key], mapStack);
             } else if (typeof map[key] === 'function') {
-                arr[key] = map[key](value);
+                const res = map[key](value, arr);
+
+                if (res instanceof Array) {
+                    if (res[0] === '$_ref') {
+                        arr[key] = cutByWhiteList(value, mapStack[0], mapStack);
+                    } else if (res[0] === '$_unset') {
+                        arr = undefined;
+                        break;
+                    } else {
+                        arr[key] = res;
+                    }
+                } else {
+                    arr[key] = res;
+                }
             }
         } else {
             let unset = true;
@@ -39,9 +58,22 @@ export const cutByWhiteList = (arr, map) => {
 
                 if (/^\/.+\/[gimuy]*$/.test(mapKey) && makePregFromString(mapKey).test(key)) {
                     if (typeof map[mapKey] === 'object') {
-                        arr[key] = cutByWhiteList(value, map[mapKey]);
+                        arr[key] = cutByWhiteList(value, map[mapKey], mapStack);
                     } else if (typeof map[mapKey] === 'function') {
-                        arr[key] = map[mapKey](value);
+                        const res = map[mapKey](value, arr);
+
+                        if (res instanceof Array) {
+                            if (res[0] === '$_ref') {
+                                arr[key] = cutByWhiteList(value, mapStack[0], mapStack);
+                            } else if (res[0] === '$_unset') {
+                                arr = undefined;
+                                break;
+                            } else {
+                                arr[key] = res;
+                            }
+                        } else {
+                            arr[key] = res;
+                        }
                     }
 
                     unset = false;
@@ -53,7 +85,23 @@ export const cutByWhiteList = (arr, map) => {
                 delete arr[key];
             }
         }
-    });
+    }
+
+    mapStack.length && mapStack.pop();
+
+    if (arr) {
+        if (arr instanceof Array) {
+            arr = arr.filter(val => val !== undefined);
+        } else {
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+
+                if (arr[key] === undefined) {
+                    delete arr[key];
+                }
+            }
+        }
+    }
 
     return arr;
 };
