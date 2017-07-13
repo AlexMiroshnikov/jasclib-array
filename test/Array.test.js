@@ -203,7 +203,7 @@ describe('JasclibArray', () => {
             //*/
         ];
 
-        const map = {
+        let map = {
             '/^\\d+$/': {
                 id: (arg, container) => {
                     if (!container.attr || container.attr !== 'correct') {
@@ -225,7 +225,38 @@ describe('JasclibArray', () => {
             },
         };
 
-        const output = JasclibArray.cutByWhiteList(input, map);
+        console.time('recW');
+        let output = JasclibArray.cutByWhiteList(input, map);
+        console.timeEnd('recW');
+
+        assert.deepStrictEqual(output, [
+            {
+                id: 1,
+                attr: 'correct',
+                children: [
+                    {
+                        id: 102,
+                        attr: 'correct',
+                        children: [
+                            {
+                                id: 2001,
+                                attr: 'correct',
+                                children: [
+                                    {
+                                        id: 20002,
+                                        attr: 'correct',
+                                    }
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ]);
+
+        console.time('recB');
+        output = JasclibArray.cutByBlackList(input, map);
+        console.timeEnd('recB');
 
         assert.deepStrictEqual(output, [
             {

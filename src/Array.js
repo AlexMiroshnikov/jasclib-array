@@ -15,7 +15,29 @@ const makePregFromString = str => {
 };
 
 /**
- *
+ * @param {Object|undefined} input
+ * @param {Array} keys
+ * @returns {Object|undefined}
+ */
+const cleanUp = (input, keys) => {
+    if (input) {
+        if (input instanceof Array) {
+            input = input.filter(val => val !== undefined);
+        } else {
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+
+                if (input[key] === undefined) {
+                    delete input[key];
+                }
+            }
+        }
+    }
+
+    return input;
+};
+
+/**
  * @param {Object} arr
  * @param {Object} map
  * @param {Array} mapStack
@@ -88,67 +110,88 @@ export const cutByWhiteList = (arr, map, mapStack = []) => {
     }
 
     mapStack.length && mapStack.pop();
-
-    if (arr) {
-        if (arr instanceof Array) {
-            arr = arr.filter(val => val !== undefined);
-        } else {
-            for (let i = 0; i < keys.length; i++) {
-                const key = keys[i];
-
-                if (arr[key] === undefined) {
-                    delete arr[key];
-                }
-            }
-        }
-    }
-
+    arr = cleanUp(arr, keys);
     return arr;
 };
 
 /**
- *
  * @param {Object} arr
  * @param {Object} map
  * @returns {Object}
  */
-export const cutByBlackList = (arr, map) => {
-    Object.keys(arr).map(key => {
-        const value = arr[key];
-    let unset = false;
+export const cutByBlackList = (arr, map, mapStack = []) => {
+    mapStack.push(map);
 
-    if (map[key]) {
-        if (typeof map[key] === 'object') {
-            arr[key] = cutByBlackList(value, map[key]);
-        } else if (typeof map[key] === 'function') {
-            arr[key] = map[key](value);
-        } else {
-            unset = true;
-        }
-    } else {
-        const mapKeys = Object.keys(map);
+    if (arr !== undefined) {
+        const keys = Object.keys(arr);
 
-        for (let i = 0; i < mapKeys.length; i++) {
-            const mapKey = mapKeys[i];
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            const value = arr[key];
+            let unset = false;
 
-            if (/^\/.+\/[gimuy]*$/.test(mapKey) && makePregFromString(mapKey).test(key)) {
-                if (typeof map[mapKey] === 'object') {
-                    arr[key] = cutByBlackList(value, map[mapKey]);
-                } else if (typeof map[mapKey] === 'function') {
-                    arr[key] = map[mapKey](value);
+            if (map[key]) {
+                if (typeof map[key] === 'object') {
+                    arr[key] = cutByBlackList(value, map[key], mapStack);
+                } else if (typeof map[key] === 'function') {
+                    const res = map[key](value, arr);
+
+                    if (res instanceof Array) {
+                        if (res[0] === '$_ref') {
+                            arr[key] = cutByBlackList(value, mapStack[0], mapStack);
+                        } else if (res[0] === '$_unset') {
+                            arr = undefined;
+                            break;
+                        } else {
+                            arr[key] = res;
+                        }
+                    } else {
+                        arr[key] = res;
+                    }
                 } else {
                     unset = true;
                 }
-                break;
+            } else {
+                const mapKeys = Object.keys(map);
+
+                for (let i = 0; i < mapKeys.length; i++) {
+                    const mapKey = mapKeys[i];
+
+                    if (/^\/.+\/[gimuy]*$/.test(mapKey) && makePregFromString(mapKey).test(key)) {
+                        if (typeof map[mapKey] === 'object') {
+                            arr[key] = cutByBlackList(value, map[mapKey], mapStack);
+                        } else if (typeof map[mapKey] === 'function') {
+                            const res = map[mapKey](value, arr);
+
+                            if (res instanceof Array) {
+                                if (res[0] === '$_ref') {
+                                    arr[key] = cutByBlackList(value, mapStack[0], mapStack);
+                                } else if (res[0] === '$_unset') {
+                                    arr = undefined;
+                                    break;
+                                } else {
+                                    arr[key] = res;
+                                }
+                            } else {
+                                arr[key] = res;
+                            }
+                        } else {
+                            unset = true;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (unset) {
+                delete arr[key];
             }
         }
+
+        arr = cleanUp(arr, keys);
     }
 
-    if (unset) {
-        delete arr[key];
-    }
-});
-
+    mapStack.length && mapStack.pop();
     return arr;
 };
 
