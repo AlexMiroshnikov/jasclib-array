@@ -103,7 +103,7 @@ export const cutByWhiteList = (arr, map, mapStack = []) => {
                 }
             }
 
-            if (unset) {
+            if (unset && arr) {
                 delete arr[key];
             }
         }
