@@ -1,9 +1,10 @@
 # jasclib-array
+Configurable array/object helpers for JavaScript
+
 [![npm version](https://badge.fury.io/js/jasclib-array.svg)](https://badge.fury.io/js/jasclib-array)
 [![Build Status](https://travis-ci.org/AlexMiroshnikov/jasclib-array.svg?branch=master)](https://travis-ci.org/AlexMiroshnikov/jasclib-array)
 [![Coverage Status](https://coveralls.io/repos/github/AlexMiroshnikov/jasclib-array/badge.svg?branch=master)](https://coveralls.io/github/AlexMiroshnikov/jasclib-array?branch=master)
 
-Configurable array/object helpers for JavaScript
 
 **ZERO dependencies!**
 
