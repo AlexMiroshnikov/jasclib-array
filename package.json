@@ -1,6 +1,6 @@
 {
   "name": "jasclib-array",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "license": "MIT",
   "main": "lib/Array.js",
   "homepage": "https://github.com/AlexMiroshnikov/jasclib-array",
